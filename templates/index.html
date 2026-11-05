@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Эксперимент: Такси</title>
+    <style>
+        body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f3f4f6; margin: 40px; color: #333; }
+        .wrapper { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); max-width: 550px; margin: 0 auto; }
+        h2 { color: #ffc107; background: #212529; padding: 15px; border-radius: 6px; text-align: center; }
+        label { font-weight: bold; display: block; margin-top: 15px; }
+        input, select { width: 100%; padding: 10px; margin: 5px 0 20px 0; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
+        button { background-color: #ffc107; color: #212529; border: none; padding: 12px 20px; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: bold; width: 100%; }
+        button:hover { background-color: #e0a800; }
+        .history { margin-top: 30px; background: #f8f9fa; padding: 15px; border-radius: 6px; border-left: 5px solid #ffc107; }
+        ul { padding-left: 20px; }
+        li { margin-bottom: 8px; }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <h2>Расчет стоимости поездки</h2>
+        
+        <form method="POST">
+            <label>Дистанция поездки (в километрах):</label>
+            <input type="number" name="distance" min="1" max="500" value="5" required>
+
+            <label>Выберите тариф такси:</label>
+            <select name="tariff">
+                <option value="Эконом">Эконом (15 руб/км)</option>
+                <option value="Комфорт">Комфорт (25 руб/км)</option>
+                <option value="Бизнес">Бизнес (50 руб/км)</option>
+            </select>
+
+            <button type="submit">Рассчитать стоимость и сохранить заказ в БД</button>
+        </form>
+
+        {% if history %}
+        <div class="history">
+            <h3>История расчетов из базы данных SQLite:</h3>
+            <ul>
+                {% for row in history %}
+                <li>Поездка на <b>{{ row[0] }} км</b> (Тариф: {{ row[1] }}) — Стоимость: <b>{{ row[2] }} руб.</b></li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>
