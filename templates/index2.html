@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Такси</title>
+    <style>
+        :root {
+            --bg: #F4F6F8;
+            --surface: #FFFFFF;
+            --text: #212529;
+            --text-muted: #6C757D;
+            --accent: #4A6B82;
+            --accent-light: #F0F4F8;
+            --border: #E2E8F0;
+            --success: #27AE60;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 40px 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        .layout-container {
+            display: flex;
+            gap: 24px;
+            max-width: 1000px;
+            width: 100%;
+        }
+
+        .panel {
+            background-color: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 28px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+            box-sizing: border-box;
+        }
+
+        .form-panel { flex: 1.2; }
+        .history-panel { flex: 1; display: flex; flex-direction: column; }
+
+        h2 { margin: 0 0 20px 0; font-size: 20px; font-weight: 600; color: var(--text); }
+        h3 { margin: 0 0 16px 0; font-size: 13px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; }
+
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; font-size: 12px; font-weight: 500; color: var(--text-muted); margin-bottom: 6px; }
+
+        .form-group input[type="text"], .form-group input[type="number"], .form-group select {
+            width: 100%; background-color: var(--surface); border: 1px solid var(--border); color: var(--text);
+            padding: 11px 14px; border-radius: 8px; font-size: 14px; box-sizing: border-box;
+        }
+        .form-group input:focus, .form-group select:focus { outline: none; border-color: var(--accent); }
+
+        .tariffs-grid { display: flex; gap: 8px; margin-top: 4px; }
+        .tariff-item { flex: 1; position: relative; }
+        .tariff-item input { position: absolute; opacity: 0; width: 0; height: 0; }
+
+        .tariff-btn { display: block; background-color: var(--surface); border: 1px solid var(--border); padding: 12px 6px; border-radius: 8px; text-align: center; cursor: pointer; }
+        .tariff-btn .name { display: block; font-size: 13px; font-weight: 500; }
+        .tariff-btn .rate { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+        .tariff-item input:checked + .tariff-btn { border-color: var(--accent); background-color: var(--accent-light); }
+        .tariff-item input:checked + .tariff-btn .name { color: var(--accent); }
+
+        .btn-action { width: 100%; background-color: var(--accent); color: #FFFFFF; border: none; padding: 14px; font-size: 14px; font-weight: 500; border-radius: 8px; cursor: pointer; margin-top: 8px; }
+        
+        /* Зеленая кнопка завершения заказа */
+        .btn-complete { width: 100%; background-color: var(--success); color: #FFFFFF; border: none; padding: 14px; font-size: 13px; font-weight: 600; border-radius: 8px; cursor: pointer; margin-top: 15px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .btn-complete:hover { background-color: #1e8743; }
+
+        .history-container { display: flex; flex-direction: column; gap: 10px; flex-grow: 1; }
+        .history-card { background-color: var(--surface); border: 1px solid var(--border); padding: 14px; border-radius: 10px; }
+        .card-header { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); margin-bottom: 6px; }
+        .card-passenger { font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
+        .card-driver { font-size: 11px; color: var(--accent); margin-bottom: 6px; font-weight: 500; }
+        .card-route { font-size: 13px; color: var(--text-muted); line-height: 1.4; }
+        .card-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; font-size: 12px; }
+        .badge { background: #F8F9FA; border: 1px solid var(--border); padding: 2px 8px; border-radius: 4px; }
+        .badge-status { background: #FFF9E6; border: 1px solid #FFEBAA; color: #B7791F; font-weight: 600; }
+        .price { font-weight: 600; font-size: 14px; }
+        .no-data { color: var(--text-muted); font-style: italic; text-align: center; margin: auto 0; font-size: 13px; }
+    </style>
+</head>
+<body>
+
+<div class="layout-container">
+    <!-- Левая панель: Форма заказа -->
+    <div class="panel form-panel">
+        <h2>Новая поездка</h2>
+        <form method="POST" action="/">
+            <div class="form-group">
+                <label>ПАССАЖИР</label>
+                <input type="text" name="passenger_name" placeholder="Имя и Фамилия" required>
+            </div>
+            <div class="form-group">
+                <label>ОТКУДА</label>
+                <input type="text" name="street_from" placeholder="Улица, дом" required>
+            </div>
+            <div class="form-group">
+                <label>КУДА</label>
+                <input type="text" name="street_to" placeholder="Улица, дом" required>
+            </div>
+            <div class="form-group">
+                <label>РАССТОЯНИЕ (КМ)</label>
+                <input type="number" name="distance" min="0.1" step="0.1" value="5.0" required>
+            </div>
+            <div class="form-group">
+                <label>ТАРИФ</label>
+                <div class="tariffs-grid">
+                    <div class="tariff-item">
+                        <input type="radio" id="eco" name="tariff" value="Эконом" checked>
+                        <label for="eco" class="tariff-btn"><span class="name">Эконом</span><span class="rate">15 ₽/км</span></label>
+                    </div>
+                    <div class="tariff-item">
+                        <input type="radio" id="comf" name="tariff" value="Комфорт">
+                        <label for="comf" class="tariff-btn"><span class="name">Комфорт</span><span class="rate">25 ₽/км</span></label>
+                    </div>
+                    <div class="tariff-item">
+                        <input type="radio" id="biz" name="tariff" value="Бизнес">
+                        <label for="biz" class="tariff-btn"><span class="name">Бизнес</span><span class="rate">50 ₽/км</span></label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>ВЫБЕРИТЕ ВОДИТЕЛЯ (ДАННЫЕ ИЗ БД)</label>
+                <select name="driver">
+                    {% if drivers %}
+                        {% for dr in drivers %}
+                        <option value="{{ dr.name }}">
+                            {{ dr.name }} (★ {{ dr.rating }}) — {{ dr.car }}
+                        </option>
+                        {% endfor %}
+                    {% endif %}
+                </select>
+            </div>
+
+            <button type="submit" class="btn-action">Зарегистрировать заказ</button>
+        </form>
+
+        <!-- Кнопка «Завершить заказ» появляется только тогда, когда есть активная поездка на экране -->
+        {% if active_trip %}
+        <form method="POST" action="/complete">
+            <button type="submit" class="btn-complete">Завершить текущий заказ</button>
+        </form>
+        {% endif %}
+    </div>
+
+    <!-- Правая панель: Текущий активный расчет -->
+    <div class="panel history-panel">
+        <h3>Архив расчетов</h3>
+        <div class="history-container">
+            {% if active_trip %}
+                <div class="history-card">
+                    <div class="card-header">
+                        <span>{{ active_trip.distance }} км</span>
+                        <span>{{ active_trip.timestamp }}</span>
+                    </div>
+                    <div class="card-passenger">👤 Пассажир: {{ active_trip.passenger_name }}</div>
+                    <div class="card-driver">🚖 Водитель: {{ active_trip.driver_name }}</div>
+                    <div class="card-route">
+                        {{ active_trip.street_from }} → {{ active_trip.street_to }}
+                    </div>
+                    <div class="card-footer">
+                        <span class="badge">{{ active_trip.tariff }}</span>
+                        <span class="badge badge-status">В ПРОЦЕССЕ</span>
+                        <span class="price">{{ active_trip.cost }} ₽</span>
+                    </div>
+                </div>
+            {% else %}
+                <p class="no-data">Заказы отсутствуют</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
